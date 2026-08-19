@@ -764,16 +764,20 @@ function drawBriefing(){
   for (const [k, v] of BRIEF){
     vtext(k, M, y, s * 1.05, '#ffe14d', 'left');
     y += s * 1.5;
+    /* measure with the letter spacing vtext draws with, or the wrap runs long */
+    ctx.save();
     ctx.font = `${s}px "Courier New", monospace`;
-    const words = v.split(' ');
+    if ('letterSpacing' in ctx) ctx.letterSpacing = `${Math.max(1, s * .14)}px`;
+    const words = v.split(' '), lines = [];
     let line = '';
     for (const w of words){
       const t = line ? line + ' ' + w : w;
-      if (ctx.measureText(t).width > W && line){
-        vtext(line, M, y, s, C_TEXT, 'left', .8); y += s * 1.35; line = w;
-      } else line = t;
+      if (ctx.measureText(t).width > W && line){ lines.push(line); line = w; }
+      else line = t;
     }
-    if (line){ vtext(line, M, y, s, C_TEXT, 'left', .8); y += s * 1.35; }
+    if (line) lines.push(line);
+    ctx.restore();
+    for (const ln of lines){ vtext(ln, M, y, s, C_TEXT, 'left', .8); y += s * 1.35; }
     y += s * .7;
     if (y > ch - 60) break;
   }
